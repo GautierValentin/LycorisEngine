@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="LycorisEngine/LycorisEngine.vcxproj" Id="cb7308d2-a4cb-4fd9-94cd-597e98aea1c0" />
+</Solution>
