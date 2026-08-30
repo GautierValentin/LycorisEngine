@@ -18,7 +18,7 @@ public:
 	~Entity();
 
 private:
-	std::vector<std::unique_ptr<Component>> _components;
+	std::vector<Component*> _components;
 
 	std::function<void(Entity*)> _needUpdateCallback; // Call the callback to notify the scene this entity has changed (new component for exemple)
 
@@ -28,8 +28,8 @@ public:
 public:
 
 	template<typename T> bool TryFind(T*& out) {
-		for (std::unique_ptr<Component>& comp : _components) {
-			if (auto* result = (T*)(comp.get())) {
+		for (Component* comp : _components) {
+			if (auto* result = (T*)(comp)) {
 				out = result;
 				return true;
 			}
@@ -38,8 +38,8 @@ public:
 	};
 
 	template<typename T> bool Contains() {
-		for (std::unique_ptr<Component>& comp : _components) {
-			if (auto* result = (T*)(comp.get())) {
+		for (Component* comp : _components) {
+			if (auto* result = (T*)(comp)) {
 				return true;
 			}
 		}
@@ -52,7 +52,7 @@ public:
 			return false;
 
 		//auto uPtr = std::make_unique<TComponent>(desc);
-		_components.push_back(std::make_unique<TComponent>(desc));
+		_components.push_back((Component*)(new TComponent(desc)));
 
 		if (false == _needUpdate) {
 			_needUpdate = true;

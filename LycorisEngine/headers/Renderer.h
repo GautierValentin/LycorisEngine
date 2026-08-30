@@ -4,7 +4,9 @@
 #include <GLFW/glfw3.h>
 #include <vector>
 #include <optional>
+#include <iostream>
 
+#include "pch.h"
 #include "Scene.h"
 
 struct QueueFamilyIndices {
@@ -22,6 +24,26 @@ struct SwapChainSupportDetails {
 	std::vector<VkPresentModeKHR> presentModes;
 };
 
+struct MeshBuffer {
+	VkBuffer vertexBuffer;
+	VkDeviceMemory vertexBufferMemory;
+	VkDeviceSize vertexBufferSize;
+	std::vector<uint32_t> vertexBufferOffsets;
+	std::vector<VkDeviceSize> vertexRegionsSize;
+
+	VkBuffer indexBuffer;
+	VkDeviceMemory indexBufferMemory;
+	VkDeviceSize indexBufferSize;
+	std::vector<uint32_t> indexBufferOffsets;
+	std::vector<VkDeviceSize> indexRegionsSize;
+
+	MeshBuffer() {
+		vertexBufferOffsets.push_back(0);
+		indexBufferOffsets.push_back(0);
+	}
+};
+
+
 class Renderer
 {
 public:
@@ -33,8 +55,6 @@ public:
 	int InitVulkan();
 
 	int UnInit();
-
-	void Tick();
 
 private:
 	int CreateVkInstance();
@@ -67,34 +87,28 @@ private:
 	VkFormat FindDepthFormat();
 	bool HasStencilComponent(VkFormat format);
 
-	void CreateTextureImage();
-	void CreateTextureImageView();
 	void CreateTextureSampler();
 
-	void CreateVertexBuffer();
-	void CreateVertexIndexBuffer();
+	void CreateMeshBuffers();
 	void CreateUniformBuffers();
 
-	void CreateDescriptorPool();
-	void CreateDescriptorSets();
 
 	void CreateCommandBuffers();
-	void RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+	void RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, std::vector<RenderData>& data);
 	void CreateSyncObjects();
 
 	void ClearSwapChain();
 	void RecreateSwapChain();
 
 public:
-	void FillGeometryBuffers(Mesh& mesh);
+	void DrawFrame(std::vector<RenderData>& data);
 
 private:
-	void DrawFrame();
 
 	void UpdateUniformBuffer(uint32_t currentImage);
 
 	void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkDeviceSize srcOffset = 0, VkDeviceSize dstOffset = 0);
 
 	VkCommandBuffer BeginSingleTimeCommands();
 	void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
@@ -110,6 +124,17 @@ private:
 	static void FramebufferResizeCallback(GLFWwindow* window, int width, int height);
 
 	static std::vector<char> ReadFile(const std::string& filename);
+
+public:
+	// Return the ID of the MeshRef
+	uint8_t FillGeometryBuffer(MeshType bufferId, MeshData& mesh);
+
+	void CreateDescriptorPool(VkDescriptorPoolCreateInfo* poolInfo, VkDescriptorPool* pool);
+	void CreateDescriptorSets(VkDescriptorPool& pool, int imgId, std::vector<VkDescriptorSet>* sets);
+
+	void DestroyDescriptorSets(VkDescriptorPool& pool);
+
+	int CreateTextureImage(const char* path);
 
 private:
 	GLFWwindow* _win;
@@ -131,7 +156,6 @@ private:
 	VkExtent2D _swapChainExtent;
 
 	VkRenderPass _renderPass;
-	VkDescriptorSetLayout _descriptorSetLayout;;
 	VkPipelineLayout _pipelineLayout;
 	VkPipeline _graphicsPipeline;
 
@@ -139,24 +163,23 @@ private:
 	VkCommandPool _transientCommandPool;
 	std::vector<VkCommandBuffer> _commandBuffers;
 
-	// Vertetx Buffers
-	VkBuffer _vertexBuffer;
-	VkDeviceMemory _vertexBufferMemory;
-	VkBuffer _indexBuffer;
-	VkDeviceMemory _indexBufferMemory;
+	VkDescriptorSetLayout _descriptorsLayout;
+
+	// Vertex Buffers
+	std::vector<MeshBuffer> _meshBuffers;
 
 	// Uniorm Buffers
 	std::vector<VkBuffer> _uniformBuffers;
 	std::vector<VkDeviceMemory> _uniformBuffersMemory;
 	std::vector<void*> _uniformBuffersMapped;
 
-	VkDescriptorPool _descriptorPool;
-	std::vector<VkDescriptorSet> _descriptorSets;
+	//VkDescriptorPool _descriptorPool;
+	//std::vector<VkDescriptorSet> _descriptorSets;
 
 	// Texture
-	VkImage _textureImage;
-	VkDeviceMemory _textureImageMemory;
-	VkImageView _textureImageView;
+	std::vector<VkImage> _textureImages;
+	std::vector<VkDeviceMemory> _textureImagesMemory;
+	std::vector<VkImageView> _textureImagesViews;
 	VkSampler _textureSampler;
 
 	// Depth
@@ -184,9 +207,10 @@ private:
 		VK_KHR_SWAPCHAIN_EXTENSION_NAME
 	};
 
-private:
+public:
 	const int _maxInFlightFrames = 2;
 
+private:
 	uint32_t _currentFrame = 0;
 
 	bool _framebufferResized = false;

@@ -8,6 +8,10 @@ Transform::~Transform()
 {
 }
 
+void Transform::Update()
+{
+}
+
 void Transform::Translate(vec3 value)
 {
 	_position += value;

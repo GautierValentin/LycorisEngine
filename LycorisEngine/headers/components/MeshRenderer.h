@@ -10,15 +10,20 @@ class MeshRenderer : public Component
 {
 public:
 	MeshRenderer(MeshRendererDesc desc);
+	MeshRenderer(MeshRenderer& other);
+	MeshRenderer(MeshRenderer&& other);
 	~MeshRenderer();
 
-private:
-	Mesh* _mesh;
-	Material* _mat;
+	void Update() override;
+
+public:
+	MeshRef _mesh;
+	Material _mat;
 };
 
 struct MeshRendererDesc{
 	using ComponentType = MeshRenderer;
 
-
+	MeshRef* meshRef;
+	Material* material;
 };

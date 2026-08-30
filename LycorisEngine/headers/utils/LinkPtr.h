@@ -66,5 +66,9 @@ public:
 			_next->Add(ref);
 		}
 	}
+
+	T* GetRef() { return _ref; };
+	LinkPtr* GetPrev() { return _prev; };
+	LinkPtr* GetNext() { return _next; };
 };
 

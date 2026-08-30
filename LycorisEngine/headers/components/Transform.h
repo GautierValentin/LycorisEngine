@@ -15,6 +15,8 @@ public:
 	Transform(TransformDesc& desc);
 	~Transform();
 
+	void Update() override;
+
 private:
 	vec3 _position;
 	vec3 _rotation;

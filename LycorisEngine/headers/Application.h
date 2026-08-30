@@ -4,6 +4,7 @@
 
 #include "Renderer.h"
 #include "Scene.h"
+#include "ResourcesAllocator.h"
 
 class Application
 {
@@ -19,7 +20,10 @@ public:
 
 public:
 	GLFWwindow* _win;
-	std::unique_ptr<Renderer> _renderer;
+	Renderer* _renderer;
 	Scene* _scene;
+	ResourcesAllocator* _allocator;
+
+	std::unordered_map<std::string, MeshRef> _loadedMeshes;
 };
 

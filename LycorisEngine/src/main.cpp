@@ -7,10 +7,6 @@ int main() {
 
     app.Init(640, 420);
 
-    Entity* entity = app._scene->Add();
-    MeshRendererDesc mDesc;
-    entity->AddComponent(mDesc);
-
     try {
         app.Run();
     }

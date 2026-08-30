@@ -1,30 +1,32 @@
 #pragma once
 
 #include <vector>
+#include <unordered_map>
+#include <iostream>
 
 #include "Vertex.h"
 
-struct Mesh {
+enum MeshType
+{
+	STATIC
+};
 
+struct MeshDesc;
 
-
-	// temp
-	Mesh() {
-		vertices = {
-			{{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-			{{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-			{{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}},
-			{{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}},
-			{{-0.5f, -0.5f, 0.5f}, {1.0f, 0.0f, 0.0f}},
-			{{0.5f, -0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-			{{0.5f, 0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-			{{-0.5f, 0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
-		};
-		indices = {
-			0, 1, 2, 2, 3, 0, 0, 1, 5, 5, 6, 7, 4, 5, 6
-		};
-	};
-
+struct MeshData {
 	std::vector<Vertex> vertices;
 	std::vector<uint32_t> indices;
+};
+
+struct MeshRef {
+	// id in its buffer
+	uint8_t id;
+	MeshType type;
+};
+
+struct MeshDesc {
+	char* path;
+	char* name;
+	MeshType type;
+	std::unordered_map<std::string, MeshRef>& dest;
 };

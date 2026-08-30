@@ -1,4 +1,6 @@
+#include <map>
 #include <glm/glm.hpp>
+
 #include "Scene.h"
 
 Scene::Scene()
@@ -11,9 +13,12 @@ Scene::~Scene()
 {
 }
 
-void Scene::Update()
+std::vector<RenderData> Scene::Update()
 {
     UpdateEntitesComponentsReferences();
+    PackRenderData();
+
+    return _renderData;
 }
 
 void Scene::UpdateEntitesComponentsReferences()
@@ -28,7 +33,7 @@ void Scene::UpdateEntitesComponentsReferences()
             }
         }
     }
-    _needUpdateEntities.empty();
+    _needUpdateEntities.clear();
 }
 
 Entity* Scene::Add()
@@ -39,4 +44,35 @@ Entity* Scene::Add()
     
 
     return &entity;
+}
+
+// Distribute specific components ref into dedicated virtual arrays
+void Scene::PackRenderData()
+{
+    if (_meshRenderers_ll == nullptr)
+        return;
+
+    _renderData.clear();
+
+    std::map<Material*, std::vector<MeshRef*>> bindings;
+
+    LinkPtr<MeshRenderer>* lPtr = _meshRenderers_ll;
+    while (lPtr != nullptr && lPtr->GetRef() != nullptr) {
+        Material& mat = lPtr->GetRef()->_mat;
+        MeshRef& mesh = lPtr->GetRef()->_mesh;
+
+        //if (bindings.contains(mat)) {
+            bindings[&mat].push_back(&mesh);
+        //}
+
+        lPtr = lPtr->GetNext();
+    }
+
+    for (auto mat : bindings) {
+        RenderData data;
+        data.mat = mat.first;
+        data.meshes = mat.second;
+
+        _renderData.push_back(data);
+    }
 }

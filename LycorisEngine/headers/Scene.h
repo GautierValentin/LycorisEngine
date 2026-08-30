@@ -2,6 +2,7 @@
 
 #include<vector>
 
+#include "pch.h"
 #include "utils/LinkPtr.h"
 #include "Entity.h"
 #include "components/MeshRenderer.h"
@@ -17,10 +18,15 @@ private:
 
 	LinkPtr<MeshRenderer>* _meshRenderers_ll;
 
+	std::vector<RenderData> _renderData;
+
 public:
-	void Update();
+	std::vector<RenderData> Update();
 
 	void UpdateEntitesComponentsReferences();
 
 	Entity* Add();
+
+private:
+	void PackRenderData();
 };

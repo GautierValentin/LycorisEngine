@@ -148,6 +148,8 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Material.cpp" />
+    <ClCompile Include="src\ResourcesAllocator.cpp" />
     <ClCompile Include="src\Scene.cpp" />
     <ClCompile Include="src\Application.cpp" />
     <ClCompile Include="src\pch.cpp" />
@@ -170,6 +172,7 @@
     <ClInclude Include="headers\ECS\Entity.h" />
     <ClInclude Include="headers\Material.h" />
     <ClInclude Include="headers\Mesh.h" />
+    <ClInclude Include="headers\ResourcesAllocator.h" />
     <ClInclude Include="headers\Scene.h" />
     <ClInclude Include="headers\utils\LinkPtr.h" />
     <ClInclude Include="headers\Vertex.h" />
