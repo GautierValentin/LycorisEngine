@@ -568,7 +568,7 @@ void Renderer::CreateDescriptorSetLayout()
 	uboLayoutBinding.binding = 0;
 	uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	uboLayoutBinding.descriptorCount = 1;
-	uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	uboLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_VERTEX_BIT;
 	uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
 
 	VkDescriptorSetLayoutBinding samplerLayoutBinding{};
@@ -708,12 +708,17 @@ void Renderer::CreateGraphicsPipeline()
 	depthStencil.front = {}; // Optional
 	depthStencil.back = {}; // Optional
 
+	VkPushConstantRange pushConstantRange{};
+	pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	pushConstantRange.offset = 0;
+	pushConstantRange.size = sizeof(ObjectPushConstants);
+
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	pipelineLayoutInfo.setLayoutCount = 1;
 	pipelineLayoutInfo.pSetLayouts = &_descriptorsLayout;
-	pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
-	pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
+	pipelineLayoutInfo.pushConstantRangeCount = 1;
+	pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
 	if (vkCreatePipelineLayout(_device, &pipelineLayoutInfo, nullptr, &_pipelineLayout) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create pipeline layout!");
@@ -964,10 +969,18 @@ void Renderer::RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image
 	for (RenderData element : data) {
 		Material* material = element.mat;
 		std::vector<MeshRef*>& meshes = element.meshes;
+		std::vector<glm::mat4>& models = element.models;
 
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _pipelineLayout, 0, 1, &(material->descriptorSets[_currentFrame]), 0, nullptr);
 
-		for (MeshRef* mesh : meshes) {
+		for (int i = 0; i < meshes.size(); i++) {
+
+			ObjectPushConstants pc;
+			pc.model = models[i];
+
+			vkCmdPushConstants(commandBuffer, _pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ObjectPushConstants), &pc);
+
+			MeshRef* mesh = meshes[i];
 			MeshBuffer& buf = _meshBuffers[mesh->type];
 			VkBuffer vertexBuffers[] = { buf.vertexBuffer };
 			VkDeviceSize vertexOffsets[] = { 0 };
@@ -1057,7 +1070,7 @@ void Renderer::RecreateSwapChain()
 
 // Draw
 
-void Renderer::DrawFrame(std::vector<RenderData>& data)
+void Renderer::DrawFrame(std::vector<RenderData>& data, glm::mat4 viewMatrix, glm::vec3 lightDirection, glm::vec3 lightColor)
 {
 	vkWaitForFences(_device, 1, &_inFlightFences[_currentFrame], VK_TRUE, UINT64_MAX);
 
@@ -1066,7 +1079,7 @@ void Renderer::DrawFrame(std::vector<RenderData>& data)
 
 	vkResetFences(_device, 1, &_inFlightFences[_currentFrame]);
 
-	UpdateUniformBuffer(_currentFrame);
+	UpdateUniformBuffer(_currentFrame, viewMatrix, lightDirection, lightColor);
 
 	vkResetCommandBuffer(_commandBuffers[_currentFrame], 0);
 	RecordCommandBuffer(_commandBuffers[_currentFrame], imageIndex, data);
@@ -1117,7 +1130,7 @@ void Renderer::DrawFrame(std::vector<RenderData>& data)
 
 // Uniform Buffer stuff
 
-void Renderer::UpdateUniformBuffer(uint32_t currentImage)
+void Renderer::UpdateUniformBuffer(uint32_t currentImage, glm::mat4 viewMatrix, glm::vec3 lightDirection, glm::vec3 lightColor)
 {
 	static auto startTime = std::chrono::high_resolution_clock::now();
 
@@ -1125,11 +1138,7 @@ void Renderer::UpdateUniformBuffer(uint32_t currentImage)
 	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
 	UniformBufferObject ubo{};
-	// Objects position ig
-	ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-
-	// Camera ig
-	ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	ubo.view = viewMatrix;
 
 	// Perspective mode ig
 	ubo.proj = glm::perspective(glm::radians(45.0f), _swapChainExtent.width / (float)_swapChainExtent.height, 0.1f, 10.0f);
@@ -1137,7 +1146,10 @@ void Renderer::UpdateUniformBuffer(uint32_t currentImage)
 	// GLM compensation (built for openGl => y axis inverted)
 	ubo.proj[1][1] *= -1;
 
-	memcpy(_uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
+	ubo.lightColor = lightColor;
+	ubo.lightDirection = lightDirection;
+
+	memcpy(_uniformBuffersMapped[currentImage], &ubo, sizeof(UniformBufferObject));
 }
 
 // Utility

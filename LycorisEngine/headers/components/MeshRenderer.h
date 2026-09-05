@@ -23,6 +23,7 @@ public:
 
 struct MeshRendererDesc{
 	using ComponentType = MeshRenderer;
+	Entity* entity;
 
 	MeshRef* meshRef;
 	Material* material;

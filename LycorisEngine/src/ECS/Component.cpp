@@ -1,6 +1,6 @@
 #include"Component.h"
 
-Component::Component()
+Component::Component(Entity* entity) : _entity(entity)
 {
 }
 
@@ -14,4 +14,9 @@ Component::Component(Component&& other)
 
 Component::~Component()
 {
+}
+
+Entity* Component::GetEntity()
+{
+    return _entity;
 }

@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\NVIDIA.PhysX.4.1.229882250\build\native\NVIDIA.PhysX.props" Condition="Exists('..\packages\NVIDIA.PhysX.4.1.229882250\build\native\NVIDIA.PhysX.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -148,7 +149,11 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\components\Camera.cpp" />
+    <ClCompile Include="src\components\Light.cpp" />
+    <ClCompile Include="src\components\Script.cpp" />
     <ClCompile Include="src\Material.cpp" />
+    <ClCompile Include="src\PhysicWorld.cpp" />
     <ClCompile Include="src\ResourcesAllocator.cpp" />
     <ClCompile Include="src\Scene.cpp" />
     <ClCompile Include="src\Application.cpp" />
@@ -163,7 +168,12 @@
   <ItemGroup>
     <ClInclude Include="additionalDependencies\stb_image.h" />
     <ClInclude Include="additionalDependencies\tiny_obj_loader.h" />
+    <ClInclude Include="headers\components\Light.h" />
+    <ClInclude Include="headers\PhysicWorld.h" />
+    <ClInclude Include="headers\test.h" />
     <ClInclude Include="headers\Application.h" />
+    <ClInclude Include="headers\components\Camera.h" />
+    <ClInclude Include="headers\components\Script.h" />
     <ClInclude Include="headers\ModelImportMessingAround.h" />
     <ClInclude Include="headers\Renderer.h" />
     <ClInclude Include="headers\components\MeshRenderer.h" />
@@ -187,6 +197,7 @@
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\glfw.3.4.0\build\native\glfw.targets" Condition="Exists('..\packages\glfw.3.4.0\build\native\glfw.targets')" />
     <Import Project="..\packages\glm.1.0.3\build\native\glm.targets" Condition="Exists('..\packages\glm.1.0.3\build\native\glm.targets')" />
+    <Import Project="..\packages\NVIDIA.PhysX.4.1.229882250\build\native\NVIDIA.PhysX.targets" Condition="Exists('..\packages\NVIDIA.PhysX.4.1.229882250\build\native\NVIDIA.PhysX.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -194,5 +205,7 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\glfw.3.4.0\build\native\glfw.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\glfw.3.4.0\build\native\glfw.targets'))" />
     <Error Condition="!Exists('..\packages\glm.1.0.3\build\native\glm.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\glm.1.0.3\build\native\glm.targets'))" />
+    <Error Condition="!Exists('..\packages\NVIDIA.PhysX.4.1.229882250\build\native\NVIDIA.PhysX.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NVIDIA.PhysX.4.1.229882250\build\native\NVIDIA.PhysX.props'))" />
+    <Error Condition="!Exists('..\packages\NVIDIA.PhysX.4.1.229882250\build\native\NVIDIA.PhysX.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NVIDIA.PhysX.4.1.229882250\build\native\NVIDIA.PhysX.targets'))" />
   </Target>
 </Project>

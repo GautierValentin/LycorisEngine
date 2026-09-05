@@ -25,5 +25,10 @@ public:
 	ResourcesAllocator* _allocator;
 
 	std::unordered_map<std::string, MeshRef> _loadedMeshes;
+
+	//temp
+	Entity* _entity;
+	Entity* _entity2;
+	Entity* _cam;
 };
 

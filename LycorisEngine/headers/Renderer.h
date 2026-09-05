@@ -24,6 +24,11 @@ struct SwapChainSupportDetails {
 	std::vector<VkPresentModeKHR> presentModes;
 };
 
+struct ObjectPushConstants
+{
+	glm::mat4 model;
+};
+
 struct MeshBuffer {
 	VkBuffer vertexBuffer;
 	VkDeviceMemory vertexBufferMemory;
@@ -101,11 +106,11 @@ private:
 	void RecreateSwapChain();
 
 public:
-	void DrawFrame(std::vector<RenderData>& data);
+	void DrawFrame(std::vector<RenderData>& data, glm::mat4 viewMatrix, glm::vec3 lightDirection, glm::vec3 lightColor);
 
 private:
 
-	void UpdateUniformBuffer(uint32_t currentImage);
+	void UpdateUniformBuffer(uint32_t currentImage, glm::mat4 viewMatrix, glm::vec3 lightDirection, glm::vec3 lightColor);
 
 	void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkDeviceSize srcOffset = 0, VkDeviceSize dstOffset = 0);
