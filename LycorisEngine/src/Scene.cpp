@@ -8,7 +8,7 @@
 Scene::Scene() : _camera(nullptr)
 {
     _meshRenderers_ll = new LinkPtr<Entity>(nullptr, nullptr, nullptr);
-    _entities.reserve(4);
+    _entities.reserve(8);
 
     _physicWorld = new PhysicWorld();
     _physicWorld->Initialize();
@@ -22,10 +22,12 @@ Scene::~Scene()
     _meshRenderers_ll->DeleteList();
 }
 
-std::vector<RenderData> Scene::Update()
+std::vector<RenderData> Scene::Update(float deltaTime)
 {
     UpdateEntitesComponentsReferences();
     PackRenderData();
+
+    _physicWorld->Simulate(deltaTime);
 
     for (Entity& entity : _entities)
         entity.Update();

@@ -57,7 +57,7 @@ public:
 
 		desc.entity = this;
 
-		TComponent* test = new TComponent(desc);
+		//TComponent* test = new TComponent(desc);
 		//auto uPtr = std::make_unique<TComponent>(desc);
 		_components.push_back((Component*)(new TComponent(desc)));
 

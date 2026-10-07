@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "PhysicWorld.h"
 
 using namespace physx;
@@ -22,17 +24,17 @@ bool PhysicWorld::Initialize()
     //    return false;
 
 #ifdef _DEBUG
-    physx::PxPvd* pvd = PxCreatePvd(*_foundation);
+    _pvd = PxCreatePvd(*_foundation);
 
-    physx::PxPvdTransport* transport =
+    _transport =
         PxDefaultPvdSocketTransportCreate(
             "127.0.0.1", // PVD host
             5425,        // Default port
             10           // Timeout (ms)
         );
 
-    pvd->connect(
-        *transport,
+    _pvd->connect(
+        *_transport,
         physx::PxPvdInstrumentationFlag::eALL
     );
 
@@ -41,7 +43,7 @@ bool PhysicWorld::Initialize()
         *_foundation,
         PxTolerancesScale(),
         true,
-        pvd
+        _pvd
     );
 
 #else
@@ -75,11 +77,7 @@ bool PhysicWorld::Initialize()
     //if (false == _scene)
     //    return false;
 
-    _defaultMaterial = _physics->createMaterial(
-        0.5f, // static friction
-        0.5f, // dynamic friction
-        0.6f  // restitution
-    );
+    CreatePhysicsMaterial("default", .5f, .5f, .6f);
 
 #ifdef _DEBUG
     PxPvdSceneClient* pvdClient =
@@ -93,47 +91,98 @@ bool PhysicWorld::Initialize()
             PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES
         );
     }
+
 #endif
 
-
-    PxTransform transform(
-        PxVec3(0.0f, 5.0f, 0.0f)
-    );
-
-    PxRigidDynamic* actor =
-        _physics->createRigidDynamic(transform);
-
-    PxShape* shape =
-        _physics->createShape(
-            PxBoxGeometry(0.5f, 0.5f, 0.5f),
-            *_defaultMaterial
-        );
-
-    actor->attachShape(*shape);
-
-
-    return _defaultMaterial != nullptr;
+    return true;
 }
 
 void PhysicWorld::Shutdown()
 {
+    for (auto mat : _physicsMaterials) {
+        mat.second->release();
+    }
+    _physicsMaterials.clear();
+
+    for (auto actor : _actors) {
+        actor->release();
+    }
+    _actors.clear();
+
+
+
     if (_scene)
         _scene->release();
     if (_dispatcher)
         _dispatcher->release();
+
+    PxCloseExtensions();
+
     if (_physics)
         _physics->release();
+
+    if (_transport)
+        _transport->release();
+    if (_pvd)
+        _pvd->release();
+
     if (_foundation)
         _foundation->release();
+
+
     _scene = nullptr;
     _dispatcher = nullptr;
     _physics = nullptr;
     _foundation = nullptr;
-
+    _pvd = nullptr;
+    _transport = nullptr;
 }
 
 void PhysicWorld::Simulate(float deltaTime)
 {
     _scene->simulate(deltaTime);
     _scene->fetchResults(true);
+}
+
+bool PhysicWorld::CreatePhysicsMaterial(const char* name, float staticFriction, float dynamicFriction, float restitution)
+{
+    if (_physicsMaterials.contains(name))
+        return false;
+
+    PxMaterial* mat = _physics->createMaterial(staticFriction, dynamicFriction, restitution);
+    _physicsMaterials[name] = mat;
+
+    return true;
+}
+
+physx::PxRigidActor* PhysicWorld::CreateActor(PxTransform transform, physx::PxGeometry* geometry, const char* physicsMaterial, BodyType bodyType)
+{
+    PxRigidActor* actor;
+
+    switch (bodyType) {
+    case STATIC_BODY:
+        actor = _physics->createRigidStatic(transform);
+        break;
+    case DYNAMIC_BODY:
+        actor = _physics->createRigidDynamic(transform);
+        break;
+    default:
+        throw std::exception("Impossible body type");
+    }
+
+    PxMaterial* material = GetPhysicsMaterial(physicsMaterial);
+    PxShape* shape = _physics->createShape(*geometry, *material);
+
+    actor->attachShape(*shape);
+
+    _scene->addActor(*actor);
+
+    _actors.push_back(actor);
+
+    return actor;
+}
+
+physx::PxMaterial* PhysicWorld::GetPhysicsMaterial(const char* name)
+{
+    return _physicsMaterials[name];
 }

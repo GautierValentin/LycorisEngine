@@ -29,7 +29,7 @@ public:
 
 public:
 	vec3 _position;
-	vec3 _rotation;
+	quat _rotation;
 	vec3 _scale;
 
 	mat4 _localMatrix;
@@ -43,9 +43,13 @@ public:
 
 public:
 	void Translate(vec3 value, Space space = Space::LOCAL);
-	void AddRotation(vec3 value);
-	void SetRotation(vec3 value);
+	void SetPosition(vec3 value, Space space = Space::LOCAL);
+
+	void Rotate(quat value, Space space = Space::LOCAL);
+	void SetRotation(quat value, Space space = Space::LOCAL);
+
 	void Scale(vec3 value);
+	void SetScale(vec3 value);
 
 public:
 	void SetDirty();
@@ -63,14 +67,14 @@ struct TransformDesc {
 	Entity* entity;
 
 	vec3 position;
-	vec3 rotation;
+	quat rotation;
 	vec3 scale;
 
 	Transform* parent = nullptr;
 
 	TransformDesc() {
 		position = vec3(0, 0, 0);
-		rotation = vec3(0, 0, 0);
+		rotation = quat(1, 0, 0, 0);
 		scale = vec3(1, 1, 1);
 	}
 };

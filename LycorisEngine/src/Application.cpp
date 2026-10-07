@@ -2,10 +2,13 @@
 #include <glm/glm.hpp>
 #include <glm/common.hpp>
 #include <GLFW/glfw3.h>
+#include <chrono>
+#include <PxPhysics.h>
 
 #include "Application.h"
 
 #include "components/Script.h"
+#include "components/Collider.h"
 #include "components/Light.h"
 #include "test.h"
 
@@ -54,11 +57,6 @@ int Application::Init(uint32_t width, uint32_t height)
     tDesc.position = glm::vec3(0, 0, 0);
     Entity* entity = _scene->Add(tDesc);
 
-    TransformDesc tDesc2;
-    tDesc2.position = glm::vec3(1, 0, 1);
-    tDesc2.parent = entity->GetTransform();
-    Entity* entity2 = _scene->Add(tDesc2);
-
     MaterialDesc matDesc;
     matDesc.renderer = _renderer;
     matDesc.texturePath = "textures/emi.png";
@@ -68,6 +66,24 @@ int Application::Init(uint32_t width, uint32_t height)
     mrDesc.meshRef = &hand;
     mrDesc.material = &mat;
 
+    entity->AddComponent(mrDesc);
+
+    ColliderDesc colDesc;
+    colDesc.scene = _scene;
+    physx::PxBoxGeometry cubeGeo = physx::PxBoxGeometry(1, 1, 2);
+    colDesc.geometry = &cubeGeo;
+    colDesc.physicsMaterial = "default";
+    colDesc.bodyType = BodyType::DYNAMIC_BODY;
+
+    entity->AddComponent(colDesc);
+
+    _entity = entity;
+
+
+    TransformDesc tDesc2;
+    tDesc2.position = glm::vec3(1, 0, 1);
+    tDesc2.parent = entity->GetTransform();
+    Entity* entity2 = _scene->Add(tDesc2);
 
     MaterialDesc matDesc2;
     matDesc2.renderer = _renderer;
@@ -78,19 +94,17 @@ int Application::Init(uint32_t width, uint32_t height)
     mrDesc2.meshRef = &hand;
     mrDesc2.material = &mat2;
 
-    entity->AddComponent(mrDesc);
     entity2->AddComponent(mrDesc2);
 
-    _entity = entity;
     _entity2 = entity2;
+
+
 
     TransformDesc tDescCam;
     tDescCam.position = glm::vec3(0, -1, 0);
-    tDescCam.rotation = glm::vec3(90, 0, 0);
+    tDescCam.rotation = glm::quat(glm::vec3(90, 0, 0));
     _cam = _scene->Add(tDescCam);
     _scene->SetCamera(_cam);
-
-    
     
     MaterialDesc matDesc3;
     matDesc3.renderer = _renderer;
@@ -110,6 +124,24 @@ int Application::Init(uint32_t width, uint32_t height)
     light->AddComponent(mrDesc3);
     _scene->SetLight(light);
 
+
+    
+
+    
+
+
+    TransformDesc tDescGround;
+    tDescGround.position = glm::vec3(0, -6, 0);
+    Entity* ground = _scene->Add(tDescGround);
+
+    ColliderDesc colDescGround;
+    colDescGround.scene = _scene;
+    physx::PxBoxGeometry planeGeo = physx::PxBoxGeometry(4, 1, 4);
+    colDescGround.geometry = &planeGeo;
+    colDescGround.physicsMaterial = "default";
+    colDescGround.bodyType = BodyType::STATIC_BODY;
+
+    ground->AddComponent(colDescGround);
 
     ScriptDesc sDesc;
     sDesc.window = _win;
@@ -140,9 +172,18 @@ int Application::UnInit()
 
 void Application::Run()
 {
+    auto last = std::chrono::steady_clock::now();
+    const float fixedDT = 1.0f / 60.0f;
+    float accumulator = 0.0f;
+
     while (false == glfwWindowShouldClose(_win)) {
         
         glfwPollEvents();
+
+        auto now = std::chrono::steady_clock::now();
+        std::chrono::duration<float> delta = now - last;
+        last = now;
+        auto dt = delta.count();
 
         // TEMP
 
@@ -150,7 +191,7 @@ void Application::Run()
 
         //END TEMP
 
-        auto data = _scene->Update();
+        auto data = _scene->Update(dt);
         auto view = _scene->GetCamView();
         auto lightPair = _scene->GetLightData();
         _renderer->DrawFrame(data, view, lightPair.first, lightPair.second);

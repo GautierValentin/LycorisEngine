@@ -24,13 +24,7 @@ void Transform::Update()
 void Transform::Translate(vec3 value, Space space)
 {
     if(space == Space::LOCAL){
-        glm::mat4 rotationMatrix = glm::yawPitchRoll(
-            _rotation.y,
-            _rotation.x,
-            _rotation.z
-        );
-
-        _position += glm::vec3(rotationMatrix * glm::vec4(value, 0.0f));
+        _position += _rotation * value;
     }
     else {
         _position += value;
@@ -38,21 +32,51 @@ void Transform::Translate(vec3 value, Space space)
     SetDirty();
 }
 
-void Transform::AddRotation(vec3 value)
+void Transform::SetPosition(vec3 value, Space space)
 {
-    _rotation += glm::vec3(value.x, value.y, value.z);
+    if (space == Space::LOCAL) {
+        _position = _rotation * value;
+    }
+    else {
+        _position = value;
+    }
+
     SetDirty();
 }
 
-void Transform::SetRotation(vec3 value)
+void Transform::Rotate(quat value, Space space = Space::LOCAL)
 {
-    _rotation = glm::vec3(value.x, value.y, value.z);
+    if (space == Space::LOCAL) {
+        _rotation *= value;
+    }
+    else {
+        _rotation *= value;
+    }
+    
+    SetDirty();
+}
+
+void Transform::SetRotation(quat value, Space space = Space::LOCAL)
+{
+    if (space == Space::LOCAL) {
+        _rotation = value;
+    }
+    else {
+        _rotation = value;
+    }
+
     SetDirty();
 }
 
 void Transform::Scale(vec3 value)
 {
 	_scale *= value;
+    SetDirty();
+}
+
+void Transform::SetScale(vec3 value)
+{
+    _scale = value;
     SetDirty();
 }
 
@@ -83,9 +107,8 @@ mat4 Transform::ComputeLocalMatrix()
     model = glm::translate(model, _position);
 
     // Apply rotations around each axis
-    model = glm::rotate(model, glm::radians(_rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(_rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(_rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+    glm::mat4 rotationMatrix = glm::mat4_cast(_rotation);
+    model = model * rotationMatrix;
 
     // Apply scaling
     model = glm::scale(model, _scale);

@@ -60,7 +60,7 @@ public:
         {
             Transform* tr;
             _centity3->TryFind<Transform>(tr);
-            tr->AddRotation(glm::vec3(0, 0, -.1f));
+            tr->Rotate(glm::quat(glm::vec3(0, 0, .01f)));
         }
 
         state = glfwGetKey(_win, GLFW_KEY_W);
@@ -111,17 +111,29 @@ public:
             _entity->TryFind(camTr);
 
             // Accumulate the rotation.
-            float y = camTr->_rotation.y + yaw;
-            float x = camTr->_rotation.x + pitch;
+            static float pitchAcc = camTr->_rotation.x;
+            static float yawAcc = camTr->_rotation.y;
+
+            pitchAcc = pitchAcc + pitch;
+            yawAcc = yawAcc + yaw;
 
             // Clamp the CAMERA'S pitch, not the mouse delta.
-            x = glm::clamp(
-                x,
+            pitchAcc = glm::clamp(
+                pitchAcc,
                 glm::radians(-89.0f),
                 glm::radians(89.0f)
             );
 
-            camTr->SetRotation(vec3(x, y, 0));
+            glm::quat qPitch = glm::angleAxis(pitch, glm::vec3(1, 0, 0));
+            glm::quat qYaw = glm::angleAxis(yaw, glm::vec3(0, 1, 0));
+
+            glm::quat rotation = qYaw * qPitch;
+
+            camTr->Rotate(rotation);
+
+            glm::quat pitchRotate = glm::quat(glm::cos(pitch / 2), glm::sin(pitch / 2), 0, 0);
+
+            //camTr->Rotate(pitchRotate);
 
             oldPos = newPos;
         }

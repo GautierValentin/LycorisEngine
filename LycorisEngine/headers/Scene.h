@@ -29,7 +29,10 @@ private:
 	std::vector<RenderData> _renderData;
 
 public:
-	std::vector<RenderData> Update();
+	PhysicWorld& GetPhysicWorld() { return *_physicWorld; };
+
+public:
+	std::vector<RenderData> Update(float deltaTime);
 
 	void UpdateEntitesComponentsReferences();
 
