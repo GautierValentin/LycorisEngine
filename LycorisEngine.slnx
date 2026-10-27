@@ -4,4 +4,7 @@
     <Platform Name="x86" />
   </Configurations>
   <Project Path="LycorisEngine/LycorisEngine.vcxproj" Id="cb7308d2-a4cb-4fd9-94cd-597e98aea1c0" />
+  <Project Path="UnnamedAmaryllis/UnnamedAmaryllis.vcxproj" Id="e3604258-43e7-45cb-bf87-f6814c5c9593">
+    <BuildDependency Project="LycorisEngine/LycorisEngine.vcxproj" />
+  </Project>
 </Solution>

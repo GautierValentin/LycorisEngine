@@ -38,13 +38,13 @@ void Transform::SetPosition(vec3 value, Space space)
         _position = _rotation * value;
     }
     else {
-        _position = value;
+        _position = value; //TODO: big big to do
     }
 
     SetDirty();
 }
 
-void Transform::Rotate(quat value, Space space = Space::LOCAL)
+void Transform::Rotate(quat value, Space space)
 {
     if (space == Space::LOCAL) {
         _rotation *= value;
@@ -56,7 +56,7 @@ void Transform::Rotate(quat value, Space space = Space::LOCAL)
     SetDirty();
 }
 
-void Transform::SetRotation(quat value, Space space = Space::LOCAL)
+void Transform::SetRotation(quat value, Space space)
 {
     if (space == Space::LOCAL) {
         _rotation = value;
@@ -78,6 +78,34 @@ void Transform::SetScale(vec3 value)
 {
     _scale = value;
     SetDirty();
+}
+
+vec3 Transform::GetLocalPosition()
+{
+    return _position;
+}
+
+vec3 Transform::GetGlobalPosition()
+{
+    if (_parent != nullptr) {
+        return _position + _parent->GetGlobalPosition();
+    }
+    else
+        return _position;
+}
+
+quat Transform::GetLocalRotation()
+{
+    return _rotation;
+}
+
+quat Transform::GetGlobalRotation()
+{
+    if (_parent != nullptr) {
+        return _parent->GetGlobalRotation() * _rotation; // TODO: mega unsure it works, didn't check
+    }
+    else
+        return _rotation;
 }
 
 void Transform::SetDirty()
@@ -103,14 +131,14 @@ mat4 Transform::ComputeLocalMatrix()
 
     glm::mat4 model = glm::mat4(1.0f);
 
-    // Apply transformations in order: scale, rotate, translate
+    // Position
     model = glm::translate(model, _position);
 
-    // Apply rotations around each axis
+    // Rotation
     glm::mat4 rotationMatrix = glm::mat4_cast(_rotation);
     model = model * rotationMatrix;
 
-    // Apply scaling
+    // Scale
     model = glm::scale(model, _scale);
 
     _localMatrix = model;

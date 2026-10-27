@@ -25,6 +25,7 @@ private:
 	Entity* _light;
 
 	LinkPtr<Entity>* _meshRenderers_ll;
+	LinkPtr<Entity>* _colliders_ll;
 
 	std::vector<RenderData> _renderData;
 
@@ -46,4 +47,6 @@ public:
 
 private:
 	void PackRenderData();
+	void UploadPhysics();
+	void DownloadPhysics();
 };

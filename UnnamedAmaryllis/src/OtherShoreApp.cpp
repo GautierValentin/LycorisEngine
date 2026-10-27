@@ -1,57 +1,27 @@
-#include <iostream>
-#include <glm/glm.hpp>
-#include <glm/common.hpp>
-#include <GLFW/glfw3.h>
-#include <chrono>
-#include <PxPhysics.h>
-
-#include "Application.h"
-
-#include "components/Script.h"
+#include "PhysicWorld.h"
+#include "test.h"
+#include "components/Camera.h"
 #include "components/Collider.h"
 #include "components/Light.h"
-#include "test.h"
+#include "components/MeshRenderer.h"
+#include "components/Transform.h"
 
+#include "OtherShoreApp.h"
 
-Application::Application()
+OtherShoreApp::OtherShoreApp() : HiganApp()
 {
-    //Init();
 }
 
-Application::~Application()
+OtherShoreApp::~OtherShoreApp()
 {
-    //UnInit();
 }
 
-int Application::Init(uint32_t width, uint32_t height)
+void OtherShoreApp::Start()
 {
-    _scene = new Scene();
-
-    if (false == glfwInit())
-        return -1;
-
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-
-
-    _win = glfwCreateWindow(width, height, "Courage!", NULL, NULL);
-
-    glfwSetWindowUserPointer(_win, this);
-    if (!_win)
-    {
-        glfwTerminate();
-        return -1;
-    }
-    glfwMakeContextCurrent(_win);
-
-    _renderer = new Renderer();
-    _renderer->Init(_win);
-
-    _allocator = new ResourcesAllocator(_renderer);
-
     // Starting les betises
 
-    MeshRef& hand = _allocator->LoadMesh("models/SubdividedHand.obj", "hand", MeshType::STATIC, _loadedMeshes);
-    MeshRef& bonsho = _allocator->LoadMesh("models/Bonsho.obj", "bonsho", MeshType::STATIC, _loadedMeshes);
+    MeshRef& hand = _allocator->LoadMesh("C:/Users/Utilisateur/source/repos/LycorisEngine/LycorisEngine/models/SubdividedHand.obj", "hand", MeshType::STATIC, _loadedMeshes);
+    MeshRef& bonsho = _allocator->LoadMesh("C:/Users/Utilisateur/source/repos/LycorisEngine/LycorisEngine/models/Bonsho.obj", "bonsho", MeshType::STATIC, _loadedMeshes);
 
     TransformDesc tDesc;
     tDesc.position = glm::vec3(0, 0, 0);
@@ -59,7 +29,7 @@ int Application::Init(uint32_t width, uint32_t height)
 
     MaterialDesc matDesc;
     matDesc.renderer = _renderer;
-    matDesc.texturePath = "textures/emi.png";
+    matDesc.texturePath = "C:/Users/Utilisateur/source/repos/LycorisEngine/LycorisEngine/textures/emi.png";
     Material mat(matDesc);
 
     MeshRendererDesc mrDesc;
@@ -87,7 +57,7 @@ int Application::Init(uint32_t width, uint32_t height)
 
     MaterialDesc matDesc2;
     matDesc2.renderer = _renderer;
-    matDesc2.texturePath = "textures/yay.png";
+    matDesc2.texturePath = "C:/Users/Utilisateur/source/repos/LycorisEngine/LycorisEngine/textures/yay.png";
     Material mat2(matDesc2);
 
     MeshRendererDesc mrDesc2;
@@ -102,13 +72,13 @@ int Application::Init(uint32_t width, uint32_t height)
 
     TransformDesc tDescCam;
     tDescCam.position = glm::vec3(0, -1, 0);
-    tDescCam.rotation = glm::quat(glm::vec3(90, 0, 0));
+    tDescCam.rotation = glm::quat(glm::vec3(0, 0, 0));
     _cam = _scene->Add(tDescCam);
     _scene->SetCamera(_cam);
-    
+
     MaterialDesc matDesc3;
     matDesc3.renderer = _renderer;
-    matDesc3.texturePath = "textures/emi.png";
+    matDesc3.texturePath = "C:/Users/Utilisateur/source/repos/LycorisEngine/LycorisEngine/textures/emi.png";
     Material mat3(matDesc3);
 
     MeshRendererDesc mrDesc3;
@@ -125,9 +95,9 @@ int Application::Init(uint32_t width, uint32_t height)
     _scene->SetLight(light);
 
 
-    
 
-    
+
+
 
 
     TransformDesc tDescGround;
@@ -154,48 +124,4 @@ int Application::Init(uint32_t width, uint32_t height)
     _cam->AddComponent(csDesc);
 
     glfwSetInputMode(_win, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-    return 0;
 }
-
-int Application::UnInit()
-{
-    delete _allocator;
-
-    delete _scene;
-
-    _renderer->UnInit();
-    delete _renderer;
-
-    return 0;
-}
-
-void Application::Run()
-{
-    auto last = std::chrono::steady_clock::now();
-    const float fixedDT = 1.0f / 60.0f;
-    float accumulator = 0.0f;
-
-    while (false == glfwWindowShouldClose(_win)) {
-        
-        glfwPollEvents();
-
-        auto now = std::chrono::steady_clock::now();
-        std::chrono::duration<float> delta = now - last;
-        last = now;
-        auto dt = delta.count();
-
-        // TEMP
-
-        
-
-        //END TEMP
-
-        auto data = _scene->Update(dt);
-        auto view = _scene->GetCamView();
-        auto lightPair = _scene->GetLightData();
-        _renderer->DrawFrame(data, view, lightPair.first, lightPair.second);
-    }
-}
-
-

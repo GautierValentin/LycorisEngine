@@ -3,11 +3,13 @@
 
 #include "components/Camera.h"
 #include "components/Light.h"
+#include "components/Collider.h"
 #include "Scene.h"
 
 Scene::Scene() : _camera(nullptr)
 {
     _meshRenderers_ll = new LinkPtr<Entity>(nullptr, nullptr, nullptr);
+    _colliders_ll = new LinkPtr<Entity>(nullptr, nullptr, nullptr);
     _entities.reserve(8);
 
     _physicWorld = new PhysicWorld();
@@ -28,9 +30,12 @@ std::vector<RenderData> Scene::Update(float deltaTime)
     PackRenderData();
 
     _physicWorld->Simulate(deltaTime);
+    DownloadPhysics();
 
     for (Entity& entity : _entities)
         entity.Update();
+
+    UploadPhysics();
 
     return _renderData;
 }
@@ -43,6 +48,12 @@ void Scene::UpdateEntitesComponentsReferences()
         if (entity->Contains<MeshRenderer>()) {
             if (false == _meshRenderers_ll->Contains(entity)) {
                 _meshRenderers_ll->Add(entity);
+            }
+        }
+
+        if (entity->Contains<Collider>()) {
+            if (false == _colliders_ll->Contains(entity)) {
+                _colliders_ll->Add(entity);
             }
         }
     }
@@ -158,5 +169,31 @@ void Scene::PackRenderData()
         data.models = mat.second.second;
 
         _renderData.push_back(data);
+    }
+}
+
+void Scene::UploadPhysics()
+{
+    LinkPtr<Entity>* lPtr = _colliders_ll;
+    while (lPtr != nullptr && lPtr->GetRef() != nullptr) {
+        Collider* col;
+        lPtr->GetRef()->TryFind(col);
+        
+        col->UploadPhysics();
+
+        lPtr = lPtr->GetNext();
+    }
+}
+
+void Scene::DownloadPhysics()
+{
+    LinkPtr<Entity>* lPtr = _colliders_ll;
+    while (lPtr != nullptr && lPtr->GetRef() != nullptr) {
+        Collider* col;
+        lPtr->GetRef()->TryFind(col);
+
+        col->DownloadPhysics();
+
+        lPtr = lPtr->GetNext();
     }
 }

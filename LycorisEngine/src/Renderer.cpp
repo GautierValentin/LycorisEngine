@@ -594,8 +594,9 @@ void Renderer::CreateDescriptorSetLayout()
 
 void Renderer::CreateGraphicsPipeline()
 {
-	auto vertShaderCode = ReadFile("shaders/vert.spv");
-	auto fragShaderCode = ReadFile("shaders/frag.spv");
+	//TODO: careful with this absolute path; to change
+	auto vertShaderCode = ReadFile("C:/Users/Utilisateur/source/repos/LycorisEngine/LycorisEngine/shaders/vert.spv");
+	auto fragShaderCode = ReadFile("C:/Users/Utilisateur/source/repos/LycorisEngine/LycorisEngine/shaders/frag.spv");
 
 	VkShaderModule vertShaderModule = CreateShaderModule(vertShaderCode);
 	VkShaderModule fragShaderModule = CreateShaderModule(fragShaderCode);

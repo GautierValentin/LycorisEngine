@@ -12,7 +12,8 @@ public:
 	Script(ScriptDesc desc);
 	~Script();
 
-	void Update() override {};
+	virtual void Start() {};
+	virtual void Update() override {};
 
 protected:
 	GLFWwindow* _win;

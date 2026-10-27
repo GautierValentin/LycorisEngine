@@ -1,6 +1,7 @@
 #pragma once
 
 #include <PxPhysics.h>
+#include "PhysicWorld.h"
 
 class Scene;
 class Entity;
@@ -16,6 +17,10 @@ public:
 	~Collider();
 
 	void Update() override;
+
+public:
+	void UploadPhysics();
+	void DownloadPhysics();
 
 private:
 	physx::PxRigidActor* _physicsActor;

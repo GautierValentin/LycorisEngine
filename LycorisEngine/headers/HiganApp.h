@@ -6,16 +6,17 @@
 #include "Scene.h"
 #include "ResourcesAllocator.h"
 
-class Application
+class HiganApp
 {
 public:
-	Application();
-	~Application();
+	HiganApp();
+	~HiganApp();
 
 	int Init(uint32_t width, uint32_t height);
 	int UnInit();
 
 public:
+	virtual void Start() {};
 	void Run();
 
 public:

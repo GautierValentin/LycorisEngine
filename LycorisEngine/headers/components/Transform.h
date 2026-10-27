@@ -52,6 +52,13 @@ public:
 	void SetScale(vec3 value);
 
 public:
+	vec3 GetLocalPosition();
+	vec3 GetGlobalPosition();
+
+	quat GetLocalRotation();
+	quat GetGlobalRotation();
+
+public:
 	void SetDirty();
 
 public:
